@@ -1,0 +1,21 @@
+label {
+	width:120px;
+	float:left;
+}
+
+:invalid {
+	background-color: #F5A9A9;
+}
+
+body, li, th {
+font-size: 12pt;
+font-family: segoe ui,Arial,sans-serif;
+} 
+
+.numeric {
+	text-align: right;
+}
+
+.ui-widget {
+	font-size: 9pt;
+}
