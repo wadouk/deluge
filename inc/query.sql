@@ -28,3 +28,17 @@ from releves
 where date in 
 	(select max(date) from releves)
 limit 1"
+
+listprix="
+select vend+volume vtotalend, (vend+volume)*price as endprice, toend+fromstart as ttotal, t.*
+from (
+select volume / fromstart * toend as vend, t.* from (
+select volume, date, datediff('2012-04-29', date)/7 as toend, datediff(date,'2011-04-29') / 7 as fromstart,
+'2012-04-29' as dend,
+2.09 as price,
+46 as co_jardinier
+from releves
+) t
+) t
+order by date desc
+"

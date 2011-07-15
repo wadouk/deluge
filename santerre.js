@@ -1,6 +1,7 @@
 
 $(function() {
 	$("button").button();
+	$("#li_nb_jours_last").hide();
 	$("#dateRevele").datepicker({
 			showButtonPanel: true,
 			defaultDate: 0
@@ -35,33 +36,45 @@ $(function() {
 	});
 	
 	function round(val) {
-		return Math.floor(val*10)/10;
+		return (typeof(val) == "undefined" || val == null ? "&nbsp;": $.formatNumber(val,{locale:"fr"}));
 	}
 	
 	function nvl(val, newval) {
 		return (val == null? newval: val);
 	}
 	var list_releves = [];
+	var x_total = [], y_total = [], y_week = [];
+	
 	function prix() {
 		$.ajax({
 			url: 'prix.php',
 			success: function (data) {
-				data = data[0];
-/*				$("#vrai_releve").text(data.end);
-			$("#nb_jours_to_vrai_releve").text(round(data.toend));
-				$("#prix_m3").text(data.price);
-				$("#last_v_par_time").text(round(list_releves[0].v_par_time / 1000)); */
-				var v_to_end = 	list_releves[0].v_par_time*data.toend / 1000;
-//				$("#v_to_end").text(round(v_to_end));
-				var prix_to_end = data.price*((list_releves[0].vafter / 1000 +v_to_end));
-				$("#prix_total").text(round(prix_to_end));
-/*				$("#co_jardinier").text(data.co_jardinier);
-				$("#v_to_end_chacun").text(round(v_to_end/data.co_jardinier));
-				$("#prix_chacun").text(round(prix_to_end / data.co_jardinier));*/
-				$("#li_nb_jours_last").hide();
-				if (list_releves[0].nb_jours_last>7)
-					$("#li_nb_jours_last").show();
-//				$("#nb_jours_last").text(list_releves[0].nb_jours_last);
+				
+		try {
+			data = data[0];
+			
+			var v_to_end = 	list_releves[0].v_par_time*data.toend;
+	
+			y_total.push(v_to_end);
+			v_to_end = $.formatNumber(v_to_end,{locale:"fr"});
+			$("#v_to_end").text( v_to_end);
+			if (list_releves[0].nb_jours_last<-7) {
+				$("#nb_jours_last").text(-list_releves[0].nb_jours_last);
+				$("#li_nb_jours_last").show();
+			}
+			x_total.push(Date.parseString(nvl(data.end,"&nbsp;"),'yyyy-MM-dd').getTime());
+	
+			console.log(x_total);
+			
+			console.log(y_total);
+			var r = Raphael("gtotal");
+			r.g.text(160, 10, "Voulmes actuels et prévisions");
+			var lines = r.g.linechart(10,10,300,220, [x_total],[y_total]);
+			lines.axis[0].text = "ici";
+			lines.axis[1].text = "la";
+		}	catch (e) {
+			console.error(e);
+		}
 			}
 		});
 	}
@@ -78,19 +91,30 @@ $(function() {
 						var v_par_time = data[line].vdiff / data[line].ddiff;
 						data[line].v_par_time =v_par_time;
 					}
-					$("#table_content").append(
-					"<tr>"+
-					//"<td>"+data[line].dbefore+"</td>"+
-					//"<td class='numeric'>"+data[line].vbefore+"</td>"+
-					"<td>"+nvl(data[line].dafter,"&nbsp;")+"</td>"+
-					"<td class='numeric'>"+nvl(data[line].vafter,"&nbsp;")+"</td>"+
-					//"<td class='numeric'>"+round(data[line].ddiff)+"</td>"+
-					"<td class='numeric'>"+data[line].vdiff+"</td>"+
-					"<td class='numeric'>"+(typeof(v_par_time) == "undefined" ? "&nbsp;": round(v_par_time))+"</td>"+
-					"<td class='numeric'>"+(typeof(v_par_time) == "undefined" ? "&nbsp;" : round(v_par_time/46))+"</td>"+
-						"<td class='numeric'>"+(typeof(v_par_time) == "undefined" ? "&nbsp;": round(v_par_time/46/4.5))+"</td>"+
-					"</tr>");
+					x_total.unshift(Date.parseString(nvl(data[line].dafter,"&nbsp;"),'yyyy-MM-dd').getTime());
+					y_total.unshift(Math.round(data[line].vafter));
+					y_week.unshift(Math.round(data[line].v_par_time));
+					try {
+						$("#table_content").append(
+						"<tr>"+
+						"<td>"+Date.parseString(nvl(data[line].dafter,"&nbsp;"),'yyyy-MM-dd').format('dd/MM/yy')+"</td>"+
+						"<td class='numeric'>"+round(data[line].vafter)+"</td>"+
+						"<td class='numeric'>"+round(data[line].vdiff)+"</td>"+
+						"<td class='numeric'>"+round(v_par_time)+"</td>"+
+						"<td class='numeric'>"+ round(v_par_time/46)+"</td>"+
+							"<td class='numeric'>"+round(v_par_time/46/4.5)+"</td>"+
+						"</tr>");
+					} catch (e) {
+						console.error(e);
+					}
 				}
+				
+				
+			var w = Raphael("gweek");
+			w.g.text(160, 10, "Consommation (en litres/sem)");
+			console.log(x_total);
+			console.log(y_week);
+			var lines = w.g.barchart(10,10,300,220,[y_week]);
 				prix();
 			}
 		});
