@@ -19,3 +19,9 @@ font-family: segoe ui,Arial,sans-serif;
 .ui-widget {
 	font-size: 9pt;
 }
+
+.graph {
+	width: 400px;
+	height: 200px;
+	float:left;
+}
