@@ -50,7 +50,7 @@ $(function() {
 			success: function (data) {
 				data = data[0];
 				
-				var v_to_end = 	list_releves[0].v_par_time*data.toend;
+				var v_to_end = 	(list_releves[0].vafter*1)+list_releves[0].v_par_time*data.toend;;
 		
 				points_total.push([Date.parseString(nvl(data.end,"&nbsp;"),'yyyy-MM-dd').getTime(), v_to_end]);
 				var gtotal = $("#gtotal");
